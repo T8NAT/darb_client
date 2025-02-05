@@ -1,0 +1,99 @@
+{
+  "project_info": {
+    "project_number": "534364307070",
+    "firebase_url": "https://drb-sa-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "drb-sa",
+    "storage_bucket": "drb-sa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:534364307070:android:30d6bd0b5b30ef0c3e222f",
+        "android_client_info": {
+          "package_name": "com.drb.driver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "534364307070-ki8ksipjrfle51kgdqcbqngkuss2tclh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.drb.driver",
+            "certificate_hash": "486dd35f650ed057f8342a4f498ac31c8a9f9996"
+          }
+        },
+        {
+          "client_id": "534364307070-fto7jblrbp2bmu41ojt3imk5b611mmhd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBnj0AjequQZY-eAIIyElNFc8OwWPQkkVw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "534364307070-fto7jblrbp2bmu41ojt3imk5b611mmhd.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "534364307070-ikciummnulvutttch2ugg801dgg28elp.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.drb.driver"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:534364307070:android:1df9aa4a25061d2a3e222f",
+        "android_client_info": {
+          "package_name": "com.drb.rider"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "534364307070-vcerp6f2jkehs3s6866n76k1gde1t93t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.drb.rider",
+            "certificate_hash": "486dd35f650ed057f8342a4f498ac31c8a9f9996"
+          }
+        },
+        {
+          "client_id": "534364307070-fto7jblrbp2bmu41ojt3imk5b611mmhd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBnj0AjequQZY-eAIIyElNFc8OwWPQkkVw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "534364307070-fto7jblrbp2bmu41ojt3imk5b611mmhd.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "534364307070-ikciummnulvutttch2ugg801dgg28elp.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.drb.driver"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
