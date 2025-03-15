@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>534364307070-n1dvqf579k5rd0qvu8o80dhkers73a66.apps.googleusercontent.com</string>
+	<string>534364307070-l4c1c9oshbv40t1br30at3vmcvg0va3u.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.534364307070-n1dvqf579k5rd0qvu8o80dhkers73a66</string>
+	<string>com.googleusercontent.apps.534364307070-l4c1c9oshbv40t1br30at3vmcvg0va3u</string>
 	<key>ANDROID_CLIENT_ID</key>
-	<string>534364307070-ki8ksipjrfle51kgdqcbqngkuss2tclh.apps.googleusercontent.com</string>
+	<string>534364307070-512m9ahlcr39gp235hq0oid7h2r1f1nu.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
 	<string>AIzaSyAYujFxuvyGKz3svHElMbYr5JyU_ROj6y8</string>
 	<key>GCM_SENDER_ID</key>
@@ -15,11 +15,11 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.drb.rider</string>
+	<string>com.t8nat.drbrider</string>
 	<key>PROJECT_ID</key>
 	<string>drb-sa</string>
 	<key>STORAGE_BUCKET</key>
-	<string>drb-sa.appspot.com</string>
+	<string>drb-sa.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -31,7 +31,7 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:534364307070:ios:b4d1ea31f2e697e23e222f</string>
+	<string>1:534364307070:ios:38022ddb6c6ca27b3e222f</string>
 	<key>DATABASE_URL</key>
 	<string>https://drb-sa-default-rtdb.asia-southeast1.firebasedatabase.app</string>
 </dict>

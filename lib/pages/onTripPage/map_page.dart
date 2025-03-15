@@ -30,6 +30,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_user/pages/onTripPage/ongoingrides.dart';
 import 'package:permission_handler/permission_handler.dart' as perm;
+import '../../models/banner_model.dart' as banner;
+
 // ignore: depend_on_referenced_packages
 
 class Maps extends StatefulWidget {
@@ -107,6 +109,8 @@ class _MapsState extends State<Maps>
   List gesture = [];
   dynamic start;
   final _mapMarkerSC = StreamController<List<Marker>>();
+  List<banner.Banner> _eventBanners = [];
+
 
   StreamSink<List<Marker>> get _mapMarkerSink => _mapMarkerSC.sink;
 
@@ -152,7 +156,17 @@ class _MapsState extends State<Maps>
       showBanners(context);
     });
 
+    _getEventBanners();
+
     super.initState();
+  }
+
+  Future<void> _getEventBanners() async {
+    _eventBanners = await getEventBanners();
+    print('events length: ${_eventBanners.length}');
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -1689,14 +1703,42 @@ class _MapsState extends State<Maps>
                                                                           height: 150,
                                                                           child: ListView.builder(
                                                                             scrollDirection: Axis.horizontal,
-                                                                            itemCount: 3,
+                                                                            itemCount: _eventBanners.length,
                                                                             itemBuilder: (context, index) {
-                                                                              return Center(
-                                                                                child: EventCards(
-                                                                                  onTap: () {
-                                                                                    print('$index tapped!');
-                                                                                  },
-                                                                                ),
+                                                                              return EventCards(
+                                                                                onTap: () async{
+                                                                                  print('Event $index tapped!');
+
+                                                                                  // Extract drop location from the clicked event
+                                                                                  double dropLat = _eventBanners[index].latitude;
+                                                                                  double dropLng = _eventBanners[index].longitude;
+                                                                                  String dropAddress = _eventBanners[index].title; // Adjust based on available data
+
+                                                                                  // Update addressList with the new drop location
+                                                                                  addressList.removeWhere((element) => element.type == 'drop'); // Remove old drop if exists
+                                                                                  addressList.add(AddressList(
+                                                                                    id: 'drop',
+                                                                                    type: 'drop',
+                                                                                    address: dropAddress,
+                                                                                    latlng: LatLng(dropLat, dropLng), pickup: false,
+                                                                                  ));
+
+
+                                                                                  // Now call etaRequest
+                                                                                  var result = await etaRequest(index: index);
+
+                                                                                  if (result == true) {
+                                                                                    Navigator.push(
+                                                                                      context,
+                                                                                      MaterialPageRoute(builder: (context) => BookingConfirmation()),
+                                                                                    );
+                                                                                  } else {
+                                                                                    print('ETA request failed');
+                                                                                  }
+                                                                                },
+                                                                                imageUrl: _eventBanners[index].spotImageUrl,
+                                                                                title: _eventBanners[index].title,
+                                                                                description: _eventBanners[index].description,
                                                                               );
                                                                             },
                                                                           ),

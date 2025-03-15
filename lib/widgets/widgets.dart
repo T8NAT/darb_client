@@ -654,14 +654,18 @@ class EventCards extends StatelessWidget {
   final String imageUrl;
   final double width;
   final double height;
-  final VoidCallback? onTap;
+  final VoidCallback onTap;
+  final String title;
+  final String description;
 
   const EventCards({
     Key? key,
-    this.imageUrl = 'https://dashboard.codeparrot.ai/api/image/Z5y_JIIayXWIU-Sw/frame-88.png',
+    required this.imageUrl,
     this.width = 102,
     this.height = 154,
-    this.onTap,
+    required this.onTap,
+    required this.title,
+    required this.description,
   }) : super(key: key);
 
   @override
@@ -675,7 +679,7 @@ class EventCards extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           image: DecorationImage(
             image: NetworkImage(imageUrl),
-            fit: BoxFit.cover,
+            fit: BoxFit.contain,
           ),
         ),
       ),

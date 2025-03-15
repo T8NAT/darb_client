@@ -891,22 +891,24 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
                                                     : true,
                                                 controller: _email,
                                                 onChanged: (v) {
-                                                  String pattern =
-                                                      r'(^(?:[+0]9)?[0-9]{1,12}$)';
-                                                  RegExp regExp =
-                                                      RegExp(pattern);
-                                                  if (regExp.hasMatch(
-                                                          _email.text) &&
-                                                      isLoginemail == true &&
-                                                      signIn == 0) {
+                                                  // Check if the input starts with '9' and doesn't already start with '0' or '+'
+                                                  if (_email.text.startsWith('5') && !_email.text.startsWith('0') && !_email.text.startsWith('+')) {
+                                                    // Prepend '0' to the input
+                                                    _email.text = '0' + _email.text;
+                                                    // Move the cursor to the end of the text
+                                                    _email.selection = TextSelection.fromPosition(TextPosition(offset: _email.text.length));
+                                                  }
+
+                                                  // Define the regex pattern
+                                                  String pattern = r'(^(?:[+0]9)?[0-9]{1,12}$)';
+                                                  RegExp regExp = RegExp(pattern);
+
+                                                  // Validate the input
+                                                  if (regExp.hasMatch(_email.text) && isLoginemail == true && signIn == 0) {
                                                     setState(() {
                                                       isLoginemail = false;
                                                     });
-                                                  } else if (isLoginemail ==
-                                                          false &&
-                                                      regExp.hasMatch(
-                                                              _email.text) ==
-                                                          false) {
+                                                  } else if (isLoginemail == false && !regExp.hasMatch(_email.text)) {
                                                     setState(() {
                                                       isLoginemail = true;
                                                     });

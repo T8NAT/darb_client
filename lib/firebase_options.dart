@@ -26,10 +26,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -54,10 +51,23 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBnj0AjequQZY-eAIIyElNFc8OwWPQkkVw',
-    appId: '1:534364307070:android:1df9aa4a25061d2a3e222f',
+    appId: '1:534364307070:android:30777978b1569fbe3e222f',
     messagingSenderId: '534364307070',
     projectId: 'drb-sa',
     databaseURL: 'https://drb-sa-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'drb-sa.appspot.com',
+    storageBucket: 'drb-sa.firebasestorage.app',
   );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyAYujFxuvyGKz3svHElMbYr5JyU_ROj6y8',
+    appId: '1:534364307070:ios:38022ddb6c6ca27b3e222f',
+    messagingSenderId: '534364307070',
+    projectId: 'drb-sa',
+    databaseURL: 'https://drb-sa-default-rtdb.asia-southeast1.firebasedatabase.app',
+    storageBucket: 'drb-sa.firebasestorage.app',
+    androidClientId: '534364307070-512m9ahlcr39gp235hq0oid7h2r1f1nu.apps.googleusercontent.com',
+    iosClientId: '534364307070-l4c1c9oshbv40t1br30at3vmcvg0va3u.apps.googleusercontent.com',
+    iosBundleId: 'com.t8nat.drbrider',
+  );
+
 }

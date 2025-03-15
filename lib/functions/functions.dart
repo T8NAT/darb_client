@@ -21,6 +21,7 @@ import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../models/banner_model.dart' as banner;
 
 import '../pages/NavigatorPages/editprofile.dart';
 import '../pages/NavigatorPages/history.dart';
@@ -547,7 +548,6 @@ otpCall() async {
   return result;
 }
 
-// verify user already exist
 
 verifyUser(String number, int login, String password, String email, isOtp,
     forgot) async {
@@ -849,6 +849,36 @@ List banners = [];
 bool ismulitipleride = false;
 bool polyGot = false;
 bool changeBound = false;
+List<banner.Banner> eventBanners = [];
+
+Future<List<banner.Banner>> getEventBanners() async {
+  print('====== getEventBanners =====');
+
+  try {
+    var response = await http.get(
+      Uri.parse('https://cactus.t8nat.cloud/api/v1/spotlights'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${bearerToken[0].token}'
+      },
+    );
+
+    if (response.statusCode == 200) {
+      var jsonData = jsonDecode(response.body);
+      var bannersList = jsonData['data'] as List;
+      eventBanners = bannersList.map((bannerJson) => banner.Banner.fromJson(bannerJson)).toList();
+      print('bannaaaars: $eventBanners');
+      return eventBanners;
+    } else {
+      print('from else ${jsonDecode(response.body)}');
+      return [];
+    }
+  } catch (e) {
+    print('errrr $e');
+    return [];
+  }
+}
+
 //user current state
 
 getUserDetails({id}) async {
@@ -1420,7 +1450,7 @@ getPolylines(plat, plng, dlat, dlng) async {
   } else {
     try {
       // Null safety checks for direct coordinates
-      if (plat.isEmpty || plng.isEmpty || dlat.isEmpty || dlng.isEmpty) {
+      if (plat == null || plng == null || dlat == null || dlng == null) {
         print('Error: Invalid coordinates provided');
         return polyList;
       }
@@ -4469,8 +4499,14 @@ getemailmodule() async {
 sendOTPtoMobile(String mobile, String countryCode) async {
   print('====== sendOTPtoMobile =====');
   dynamic result;
+
+  if (mobile.startsWith('5')) {
+    mobile = '0$mobile';
+    print('Mobile number after removing leading 0: $mobile');
+  }
+
   try {
-    print('sendOTPtoMobilesendOTPtoMobile ${mobile} $countryCode');
+    print('sendOTPtoMobilesendOTPtoMobile $mobile $countryCode');
 
     var response = await http.post(Uri.parse('${url}api/v1/mobile-otp'),
         body: {'mobile': mobile, 'country_code': countryCode});
@@ -4507,6 +4543,12 @@ sendOTPtoMobile(String mobile, String countryCode) async {
 validateSmsOtp(String mobile, String otp) async {
   print('====== validateSmsOtp =====');
   dynamic result;
+
+  if (mobile.startsWith('5')) {
+    mobile = '0$mobile';
+    print('Mobile number after removing leading 0: $mobile');
+  }
+
   try {
     print('phone => $mobile');
     print('otp => $otp');
@@ -4514,6 +4556,7 @@ validateSmsOtp(String mobile, String otp) async {
         body: {'mobile': mobile, 'otp': otp});
     if (response.statusCode == 200) {
       if (jsonDecode(response.body)['success'] == true) {
+        print('success from validateSmsOtp');
         result = 'success';
       } else {
         debugPrint(response.body);
@@ -4527,8 +4570,11 @@ validateSmsOtp(String mobile, String otp) async {
           .replaceAll('[', '')
           .replaceAll(']', '')
           .toString();
+      print('err from validateSmsOtp $error');
+
     } else {
       result = 'something went wrong';
+      print('err from validateSmsOtpffff');
     }
   } catch (e) {
     print('errrr $e');

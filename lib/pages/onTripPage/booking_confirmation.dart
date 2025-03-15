@@ -143,6 +143,7 @@ class _BookingConfirmationState extends State<BookingConfirmation>
   double _isDateTimebottom = -1000;
   dynamic _dateTimeHeight = 0;
   bool nofromdate = false;
+  bool polylineFetched = false;
 
   @override
   void initState() {
@@ -781,6 +782,37 @@ class _BookingConfirmationState extends State<BookingConfirmation>
     var media = MediaQuery
         .of(context)
         .size;
+
+    if (userRequestData != null &&
+        userRequestData.isNotEmpty &&
+        userRequestData['accepted_at'] != null &&
+        !polylineFetched &&
+        widget.type != 2) {
+
+      // Ensure driverData is not null and has the required structure
+      if (driverData != null &&
+          driverData['l'] != null &&
+          driverData['l'].length >= 2 &&
+          userRequestData['pick_lat'] != null &&
+          userRequestData['pick_lng'] != null) {
+
+        // Call getPolylines with the driver's current location and pickup location
+        getPolylines(
+          driverData['l'][0], // Driver's latitude
+          driverData['l'][1], // Driver's longitude
+          userRequestData['pick_lat'], // Pickup latitude
+          userRequestData['pick_lng'], // Pickup longitude
+        );
+        polylineFetched = true; // Set the flag to true to avoid calling it again
+      }
+    }
+
+// Reset the flag when the ride is completed or canceled
+    if (userRequestData != null &&
+        (userRequestData['is_completed'] == true ||
+            userRequestData['is_cancelled'] == true)) {
+      polylineFetched = false;
+    }
 
     return PopScope(
       canPop: popFunction(),
@@ -1800,340 +1832,38 @@ class _BookingConfirmationState extends State<BookingConfirmation>
                                       height: media.height * 1,
                                       width: media.width * 1,
                                       //get drivers location updates
-                                      child: (mapType == 'google')
-                                          ? StreamBuilder<List<Marker>>(
+                                      child: StreamBuilder<List<Marker>>(
                                           stream: mapMarkerStream,
-                                          builder: (context, snapshot) {
-                                            return GoogleMap(
-                                              padding: EdgeInsets.only(
-                                                  bottom: mapPadding,
-                                                  top: media.height * 0.1 +
-                                                      MediaQuery
-                                                          .of(context)
-                                                          .padding
-                                                          .top),
-                                              onMapCreated: _onMapCreated,
-                                              compassEnabled: false,
-                                              initialCameraPosition:
-                                              CameraPosition(
-                                                target: _center,
-                                                zoom: 11.0,
-                                              ),
-                                              markers: Set<Marker>.from(
-                                                  myMarker),
-                                              polylines: polyline,
-                                              minMaxZoomPreference:
-                                              const MinMaxZoomPreference(
-                                                  0.0, 20.0),
-                                              myLocationButtonEnabled:
-                                              false,
-                                              buildingsEnabled: false,
-                                              zoomControlsEnabled: false,
-                                              myLocationEnabled: true,
-                                            );
+                                          builder: (context, snapshot){
+                                                return GoogleMap(
+                                                  padding: EdgeInsets.only(
+                                                      bottom: mapPadding,
+                                                      top: media.height * 0.1 +
+                                                          MediaQuery
+                                                              .of(context)
+                                                              .padding
+                                                              .top),
+                                                  onMapCreated: _onMapCreated,
+                                                  compassEnabled: false,
+                                                  initialCameraPosition:
+                                                  CameraPosition(
+                                                    target: _center,
+                                                    zoom: 11.0,
+                                                  ),
+                                                  markers: Set<Marker>.from(
+                                                      myMarker),
+                                                  polylines: Set<Polyline>.of(polyline),
+                                                  minMaxZoomPreference:
+                                                  const MinMaxZoomPreference(
+                                                      0.0, 20.0),
+                                                  myLocationButtonEnabled:
+                                                  false,
+                                                  buildingsEnabled: false,
+                                                  zoomControlsEnabled: false,
+                                                  myLocationEnabled: true,
+                                                );
                                           })
-                                          : StreamBuilder<List<Marker>>(
-
-                                          stream: mapMarkerStream,
-                                          builder: (context, snapshot) {
-                                            return SizedBox(
-                                              height: (userRequestData
-                                                  .isEmpty)
-                                                  ? media.height -
-                                                  media.width * 0.5
-                                                  : ((media.height * 1.1) -
-                                                  media.width),
-                                              child: fm.FlutterMap(
-                                                mapController:
-                                                _fmController,
-                                                options: fm.MapOptions(
-                                                  // ignore: deprecated_member_use
-                                                  initialCenter:
-                                                  fmlt.LatLng(
-                                                      _center
-                                                          .latitude,
-                                                      _center
-                                                          .longitude),
-
-
-                                                  initialZoom: 13,
-                                                  onTap: (P, L) {
-                                                    setState(() {});
-                                                  },),
-                                                children: [
-                                                  fm.TileLayer(
-                                                    // minZoom: 10,
-                                                    urlTemplate:
-                                                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                                    userAgentPackageName:
-                                                    'com.example.app',
-                                                  ),
-
-                                                  fm.PolylineLayer(
-                                                    polylines: [
-                                                      fm.Polyline(
-                                                          points: fmpoly,
-                                                          color:
-                                                          Colors.blue,
-                                                          strokeWidth: 4),
-                                                    ],
-                                                  ),
-
-                                                  fm.MarkerLayer(
-                                                    markers: [
-                                                      for (var k = 0;
-                                                      k <
-                                                          addressList
-                                                              .length;
-                                                      k++)
-                                                        fm.Marker(
-                                                            alignment: Alignment
-                                                                .topCenter,
-                                                            point: fmlt.LatLng(
-                                                                addressList[k]
-                                                                    .latlng
-                                                                    .latitude,
-                                                                addressList[k]
-                                                                    .latlng
-                                                                    .longitude),
-                                                            width: (k == 0 ||
-                                                                k ==
-                                                                    addressList
-                                                                        .length -
-                                                                        1)
-                                                                ? media.width *
-                                                                0.7
-                                                                : 10,
-                                                            height: (k == 0 ||
-                                                                k ==
-                                                                    addressList
-                                                                        .length -
-                                                                        1)
-                                                                ? media.width *
-                                                                0.15 +
-                                                                10
-                                                                : 18,
-                                                            child:
-                                                            (k == 0 ||
-                                                                k ==
-                                                                    addressList
-                                                                        .length -
-                                                                        1)
-                                                                ? Column(
-                                                              children: [
-                                                                Flexible(
-                                                                  child: Container(
-                                                                      decoration: BoxDecoration(
-                                                                          gradient: LinearGradient(
-                                                                              colors: [
-                                                                                (isDarkTheme ==
-                                                                                    true)
-                                                                                    ? const Color(
-                                                                                    0xff000000)
-                                                                                    : const Color(
-                                                                                    0xffFFFFFF),
-                                                                                (isDarkTheme ==
-                                                                                    true)
-                                                                                    ? const Color(
-                                                                                    0xff808080)
-                                                                                    : const Color(
-                                                                                    0xffEFEFEF),
-                                                                              ],
-                                                                              begin: Alignment
-                                                                                  .topCenter,
-                                                                              end: Alignment
-                                                                                  .bottomCenter),
-                                                                          borderRadius: BorderRadius
-                                                                              .circular(
-                                                                              5)),
-                                                                      width: (platform ==
-                                                                          TargetPlatform
-                                                                              .android)
-                                                                          ? media
-                                                                          .width *
-                                                                          0.7
-                                                                          : media
-                                                                          .width *
-                                                                          0.9,
-                                                                      padding: const EdgeInsets
-                                                                          .all(
-                                                                          5),
-                                                                      child: (userRequestData
-                                                                          .isNotEmpty)
-                                                                          ? Text(
-                                                                        userRequestData['pick_address'],
-                                                                        maxLines: 1,
-                                                                        overflow: TextOverflow
-                                                                            .fade,
-                                                                        softWrap: false,
-                                                                        style: GoogleFonts
-                                                                            .almarai(
-                                                                            color: textColor,
-                                                                            fontSize: (platform ==
-                                                                                TargetPlatform
-                                                                                    .android)
-                                                                                ? media
-                                                                                .width *
-                                                                                twelve
-                                                                                : media
-                                                                                .width *
-                                                                                sixteen),
-                                                                      )
-                                                                          : (addressList
-                                                                          .where((
-                                                                          element) =>
-                                                                      element
-                                                                          .type ==
-                                                                          'pickup')
-                                                                          .isNotEmpty)
-                                                                          ? Text(
-                                                                        addressList[k]
-                                                                            .address,
-                                                                        maxLines: 1,
-                                                                        overflow: TextOverflow
-                                                                            .fade,
-                                                                        softWrap: false,
-                                                                        style: GoogleFonts
-                                                                            .almarai(
-                                                                            color: textColor,
-                                                                            fontSize: (platform ==
-                                                                                TargetPlatform
-                                                                                    .android)
-                                                                                ? media
-                                                                                .width *
-                                                                                twelve
-                                                                                : media
-                                                                                .width *
-                                                                                sixteen),
-                                                                      )
-                                                                          : Container()),
-                                                                ),
-                                                                const SizedBox(
-                                                                  height: 10,
-                                                                ),
-                                                                Flexible(
-                                                                  child: Container(
-                                                                    decoration: BoxDecoration(
-                                                                        shape: BoxShape
-                                                                            .circle,
-                                                                        image: DecorationImage(
-                                                                            image: AssetImage(
-                                                                                (addressList[k]
-                                                                                    .type ==
-                                                                                    'pickup')
-                                                                                    ? 'assets/images/pick_icon.png'
-                                                                                    : 'assets/images/drop_icon.png'),
-                                                                            fit: BoxFit
-                                                                                .contain)),
-                                                                    height: (platform ==
-                                                                        TargetPlatform
-                                                                            .android)
-                                                                        ? media
-                                                                        .width *
-                                                                        0.07
-                                                                        : media
-                                                                        .width *
-                                                                        0.12,
-                                                                    width: (platform ==
-                                                                        TargetPlatform
-                                                                            .android)
-                                                                        ? media
-                                                                        .width *
-                                                                        0.07
-                                                                        : media
-                                                                        .width *
-                                                                        0.12,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            )
-                                                                : MyText(
-                                                              text:
-                                                              k.toString(),
-                                                              size:
-                                                              16,
-                                                              fontweight:
-                                                              FontWeight.bold,
-                                                              color:
-                                                              Colors.red,
-                                                            )),
-                                                      for (var i = 0;
-                                                      i <
-                                                          myMarker
-                                                              .length;
-                                                      i++)
-                                                        fm.Marker(
-                                                          // key: Key('10'),
-                                                          // rotate: true,
-                                                            alignment:
-                                                            Alignment
-                                                                .topCenter,
-                                                            point: fmlt.LatLng(
-                                                                myMarker[i]
-                                                                    .position
-                                                                    .latitude,
-                                                                myMarker[i]
-                                                                    .position
-                                                                    .longitude),
-                                                            width: media
-                                                                .width *
-                                                                0.7,
-                                                            height: 50,
-                                                            child: RotationTransition(
-                                                                turns: AlwaysStoppedAnimation(
-                                                                    myMarker[i]
-                                                                        .rotation /
-                                                                        360),
-                                                                child: (myMarker[i]
-                                                                    .markerId
-                                                                    .toString()
-                                                                    .contains(
-                                                                    'car#') ==
-                                                                    true)
-                                                                    ? Image
-                                                                    .asset(
-                                                                  (myMarker[i]
-                                                                      .markerId
-                                                                      .toString()
-                                                                      .replaceAll(
-                                                                      'MarkerId(',
-                                                                      '')
-                                                                      .replaceAll(
-                                                                      ')', '')
-                                                                      .split(
-                                                                      '#')[2]
-                                                                      .toString() ==
-                                                                      'taxi')
-                                                                      ? 'assets/images/top-taxi.png'
-                                                                      : (myMarker[i]
-                                                                      .markerId
-                                                                      .toString()
-                                                                      .replaceAll(
-                                                                      'MarkerId(',
-                                                                      '')
-                                                                      .replaceAll(
-                                                                      ')', '')
-                                                                      .split(
-                                                                      '#')[2]
-                                                                      .toString() ==
-                                                                      'truck')
-                                                                      ? 'assets/images/deliveryicon.png'
-                                                                      : 'assets/images/bike.png',
-                                                                )
-                                                                    : Container()))
-                                                    ],
-                                                  ),
-
-                                                  // fm.MarkerLayer()
-
-                                                  const fm
-                                                      .RichAttributionWidget(
-                                                    attributions: [],
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          })),
+                                  ),
                                   Positioned(
                                     top: MediaQuery
                                         .of(context)
@@ -3381,276 +3111,229 @@ class _BookingConfirmationState extends State<BookingConfirmation>
                                                                                       });
                                                                                 }
                                                                               },
-                                                                              child: Container(
-                                                                                padding: EdgeInsets
-                                                                                    .all(
-                                                                                    media
-                                                                                        .width *
-                                                                                        0.02),
-                                                                                // margin: EdgeInsets.only(top: 10, left: media.width * 0.05, right: media.width * 0.05),
-                                                                                height: media
-                                                                                    .width *
-                                                                                    0.157,
-                                                                                decoration: BoxDecoration(
-                                                                                    borderRadius: BorderRadius
-                                                                                        .circular(
+                                                                              child: Column(
+                                                                                children: [
+                                                                                  Container(
+                                                                                    padding: EdgeInsets
+                                                                                        .all(
                                                                                         media
                                                                                             .width *
-                                                                                            0.01),
-                                                                                    // border: Border
-                                                                                    //     .all(
-                                                                                    //     color: (choosenVehicle !=
-                                                                                    //         i)
-                                                                                    //         ? (isDarkTheme ==
-                                                                                    //         true)
-                                                                                    //         ? Colors
-                                                                                    //         .white
-                                                                                    //         : hintColor
-                                                                                    //         : primaryAppColor),
-                                                                                    // : Colors.black),
-                                                                                    // color: page,
-                                                                                    color: choosenVehicle ==
-                                                                                        i
-                                                                                        ? primaryAppColor
-                                                                                        .withOpacity(
-                                                                                        0.2)
-                                                                                        : null),
-                                                                                child: Row(
-                                                                                  children: [
-                                                                                    SizedBox(
-                                                                                      width: media
-                                                                                          .width *
-                                                                                          0.12,
-                                                                                      child: (etaDetails[i]['icon'] !=
-                                                                                          null)
-                                                                                          ? Image
-                                                                                          .network(
-                                                                                        etaDetails[i]['icon'],
-                                                                                        fit: BoxFit
-                                                                                            .contain,
-                                                                                        // width: media.width*0.07,
-                                                                                      )
-                                                                                          : Container(),
-                                                                                    ),
-                                                                                    SizedBox(
-                                                                                      width: media
-                                                                                          .width *
-                                                                                          0.03,
-                                                                                    ),
-                                                                                    Column(
-                                                                                      crossAxisAlignment: CrossAxisAlignment
-                                                                                          .start,
-                                                                                      mainAxisAlignment: MainAxisAlignment
-                                                                                          .spaceEvenly,
+                                                                                            0.02),
+                                                                                    // margin: EdgeInsets.only(top: 10, left: media.width * 0.05, right: media.width * 0.05),
+                                                                                    height: media
+                                                                                        .width *
+                                                                                        0.157,
+                                                                                    decoration: BoxDecoration(
+                                                                                        borderRadius: BorderRadius
+                                                                                            .circular(
+                                                                                            media
+                                                                                                .width *
+                                                                                                0.01),
+                                                                                        // border: Border
+                                                                                        //     .all(
+                                                                                        //     color: (choosenVehicle !=
+                                                                                        //         i)
+                                                                                        //         ? (isDarkTheme ==
+                                                                                        //         true)
+                                                                                        //         ? Colors
+                                                                                        //         .white
+                                                                                        //         : hintColor
+                                                                                        //         : primaryAppColor),
+                                                                                        // : Colors.black),
+                                                                                        // color: page,
+                                                                                        color: choosenVehicle ==
+                                                                                            i
+                                                                                            ? primaryAppColor
+                                                                                            .withOpacity(
+                                                                                            0.2)
+                                                                                            : null),
+                                                                                    child: Row(
                                                                                       children: [
-                                                                                        Row(
-                                                                                          children: [
-                                                                                            SizedBox(
-                                                                                              width: media
-                                                                                                  .width *
-                                                                                                  0.3,
-                                                                                              child: Text(
-                                                                                                  etaDetails[i]['name'],
-                                                                                                  style: GoogleFonts
-                                                                                                      .almarai(
-                                                                                                      fontSize: media
-                                                                                                          .width *
-                                                                                                          fourteen,
-                                                                                                      fontWeight: FontWeight
-                                                                                                          .w600,
-                                                                                                      color: (choosenVehicle !=
-                                                                                                          i)
-                                                                                                          ? (isDarkTheme ==
-                                                                                                          true)
-                                                                                                          ? hintColor
-                                                                                                          : textColor
-                                                                                                          : textColor)),
-                                                                                            ),
-                                                                                          ],
+                                                                                        SizedBox(
+                                                                                          width: media
+                                                                                              .width *
+                                                                                              0.12,
+                                                                                          child: (etaDetails[i]['icon'] !=
+                                                                                              null)
+                                                                                              ? Image
+                                                                                              .network(
+                                                                                            etaDetails[i]['icon'],
+                                                                                            fit: BoxFit
+                                                                                                .contain,
+                                                                                            // width: media.width*0.07,
+                                                                                          )
+                                                                                              : Container(),
                                                                                         ),
-                                                                                        Row(
+                                                                                        SizedBox(
+                                                                                          width: media
+                                                                                              .width *
+                                                                                              0.03,
+                                                                                        ),
+                                                                                        Column(
+                                                                                          crossAxisAlignment: CrossAxisAlignment
+                                                                                              .start,
+                                                                                          mainAxisAlignment: MainAxisAlignment
+                                                                                              .spaceEvenly,
                                                                                           children: [
                                                                                             Row(
                                                                                               children: [
-                                                                                                (minutes[etaDetails[i]['type_id']] !=
-                                                                                                    null &&
-                                                                                                    minutes[etaDetails[i]['type_id']] !=
-                                                                                                        '')
-                                                                                                    ? Text(
-                                                                                                  minutes[etaDetails[i]['type_id']]
-                                                                                                      .toString(),
-                                                                                                  style: GoogleFonts
-                                                                                                      .almarai(
-                                                                                                      fontSize: media
-                                                                                                          .width *
-                                                                                                          twelve,
-                                                                                                      color: const Color(
-                                                                                                          0xff8A8A8A)),
-                                                                                                )
-                                                                                                    : Text(
-                                                                                                  'الاسم',
-                                                                                                  style: GoogleFonts
-                                                                                                      .almarai(
-                                                                                                      fontSize: media
-                                                                                                          .width *
-                                                                                                          twelve,
-                                                                                                      color: (choosenVehicle !=
-                                                                                                          i)
-                                                                                                          ? (isDarkTheme ==
-                                                                                                          true)
-                                                                                                          ? hintColor
-                                                                                                          : const Color(
-                                                                                                          0xff8A8A8A)
-                                                                                                          : const Color(
-                                                                                                          0xff8A8A8A)),
-                                                                                                ),
                                                                                                 SizedBox(
                                                                                                   width: media
                                                                                                       .width *
-                                                                                                      0.02,
-                                                                                                ),
-                                                                                                Icon(
-                                                                                                  (etaDetails[i]['transport_type'] ==
-                                                                                                      'delivery')
-                                                                                                      ? CupertinoIcons
-                                                                                                      .bag
-                                                                                                      : Icons
-                                                                                                      .person,
-                                                                                                  size: media
-                                                                                                      .width *
-                                                                                                      0.04,
-                                                                                                  color: const Color(
-                                                                                                      0xff8A8A8A),
-                                                                                                ),
-                                                                                                SizedBox(
-                                                                                                  width: media
-                                                                                                      .width *
-                                                                                                      0.4,
+                                                                                                      0.3,
                                                                                                   child: Text(
-                                                                                                    (etaDetails[i]['transport_type'] ==
-                                                                                                        'delivery')
-                                                                                                        ? etaDetails[i]['size']
-                                                                                                        .toString()
-                                                                                                        : etaDetails[i]['capacity']
-                                                                                                        .toString(),
-                                                                                                    maxLines: 1,
-                                                                                                    overflow: TextOverflow
-                                                                                                        .ellipsis,
-                                                                                                    style: GoogleFonts
-                                                                                                        .almarai(
-                                                                                                        fontSize: media
-                                                                                                            .width *
-                                                                                                            twelve,
-                                                                                                        color: (choosenVehicle !=
-                                                                                                            i)
-                                                                                                            ? (isDarkTheme ==
-                                                                                                            true)
-                                                                                                            ? hintColor
-                                                                                                            : const Color(
-                                                                                                            0xff8A8A8A)
-                                                                                                            : const Color(
-                                                                                                            0xff8A8A8A)),
-                                                                                                  ),
+                                                                                                      etaDetails[i]['name'],
+                                                                                                      style: GoogleFonts
+                                                                                                          .almarai(
+                                                                                                          fontSize: media
+                                                                                                              .width *
+                                                                                                              fourteen,
+                                                                                                          fontWeight: FontWeight
+                                                                                                              .w600,
+                                                                                                          color: (choosenVehicle !=
+                                                                                                              i)
+                                                                                                              ? (isDarkTheme ==
+                                                                                                              true)
+                                                                                                              ? hintColor
+                                                                                                              : textColor
+                                                                                                              : textColor)),
                                                                                                 ),
                                                                                               ],
                                                                                             ),
+                                                                                            Row(
+                                                                                              children: [
+                                                                                                Row(
+                                                                                                  children: [
+                                                                                                    (minutes[etaDetails[i]['type_id']] !=
+                                                                                                        null &&
+                                                                                                        minutes[etaDetails[i]['type_id']] !=
+                                                                                                            '')
+                                                                                                        ? Text(
+                                                                                                      minutes[etaDetails[i]['type_id']]
+                                                                                                          .toString(),
+                                                                                                      style: GoogleFonts
+                                                                                                          .almarai(
+                                                                                                          fontSize: media
+                                                                                                              .width *
+                                                                                                              twelve,
+                                                                                                          color: const Color(
+                                                                                                              0xff8A8A8A)),
+                                                                                                    )
+                                                                                                        : Text(
+                                                                                                      'الاسم',
+                                                                                                      style: GoogleFonts
+                                                                                                          .almarai(
+                                                                                                          fontSize: media
+                                                                                                              .width *
+                                                                                                              twelve,
+                                                                                                          color: (choosenVehicle !=
+                                                                                                              i)
+                                                                                                              ? (isDarkTheme ==
+                                                                                                              true)
+                                                                                                              ? hintColor
+                                                                                                              : const Color(
+                                                                                                              0xff8A8A8A)
+                                                                                                              : const Color(
+                                                                                                              0xff8A8A8A)),
+                                                                                                    ),
+                                                                                                    SizedBox(
+                                                                                                      width: media
+                                                                                                          .width *
+                                                                                                          0.02,
+                                                                                                    ),
+                                                                                                    Icon(
+                                                                                                      (etaDetails[i]['transport_type'] ==
+                                                                                                          'delivery')
+                                                                                                          ? CupertinoIcons
+                                                                                                          .bag
+                                                                                                          : Icons
+                                                                                                          .person,
+                                                                                                      size: media
+                                                                                                          .width *
+                                                                                                          0.04,
+                                                                                                      color: const Color(
+                                                                                                          0xff8A8A8A),
+                                                                                                    ),
+                                                                                                    SizedBox(
+                                                                                                      width: media
+                                                                                                          .width *
+                                                                                                          0.4,
+                                                                                                      child: Text(
+                                                                                                        (etaDetails[i]['transport_type'] ==
+                                                                                                            'delivery')
+                                                                                                            ? etaDetails[i]['size']
+                                                                                                            .toString()
+                                                                                                            : etaDetails[i]['capacity']
+                                                                                                            .toString(),
+                                                                                                        maxLines: 1,
+                                                                                                        overflow: TextOverflow
+                                                                                                            .ellipsis,
+                                                                                                        style: GoogleFonts
+                                                                                                            .almarai(
+                                                                                                            fontSize: media
+                                                                                                                .width *
+                                                                                                                twelve,
+                                                                                                            color: (choosenVehicle !=
+                                                                                                                i)
+                                                                                                                ? (isDarkTheme ==
+                                                                                                                true)
+                                                                                                                ? hintColor
+                                                                                                                : const Color(
+                                                                                                                0xff8A8A8A)
+                                                                                                                : const Color(
+                                                                                                                0xff8A8A8A)),
+                                                                                                      ),
+                                                                                                    ),
+                                                                                                  ],
+                                                                                                ),
+                                                                                              ],
+                                                                                            )
+                                                                                            // SizedBox(width: media.width * 0.5, child: MyText(maxLines: 1, text: etaDetails[i]['short_description'], size: media.width * twelve)),
                                                                                           ],
-                                                                                        )
-                                                                                        // SizedBox(width: media.width * 0.5, child: MyText(maxLines: 1, text: etaDetails[i]['short_description'], size: media.width * twelve)),
-                                                                                      ],
-                                                                                    ),
-                                                                                    (widget
-                                                                                        .type !=
-                                                                                        2)
-                                                                                        ? Expanded(
-                                                                                        child: (etaDetails[i]['has_discount'] !=
-                                                                                            true ||
-                                                                                            etaDetails[i]['enable_bidding'] ==
-                                                                                                true)
-                                                                                            ? (isOneWayTrip)
-                                                                                            ? Row(
-                                                                                          mainAxisAlignment: MainAxisAlignment
-                                                                                              .end,
-                                                                                          children: [
-                                                                                            Text(
-                                                                                        etaDetails[i]['total']
-                                                                                            .toString() + '  ' + etaDetails[i]['currency'] ,
-                                                                                              style: GoogleFonts
-                                                                                                  .almarai(
-                                                                                                  fontSize: media
-                                                                                                      .width *
-                                                                                                      fourteen,
-                                                                                                  fontWeight: FontWeight
-                                                                                                      .w700,
-                                                                                                  color: (choosenVehicle !=
-                                                                                                      i)
-                                                                                                      ? (isDarkTheme ==
-                                                                                                      true)
-                                                                                                      ? const Color(
-                                                                                                      0xff8A8A8A)
-                                                                                                      : verifyDeclined
-                                                                                                      : verifyDeclined),
-                                                                                            ),
-                                                                                          ],
-                                                                                        )
-                                                                                            : Container()
-                                                                                            : Row(
-                                                                                          mainAxisAlignment: MainAxisAlignment
-                                                                                              .end,
-                                                                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                                                                          children: [
-                                                                                            Text(
-                                                                                              etaDetails[i]['currency'] +
-                                                                                                  ' ',
-                                                                                              style: GoogleFonts
-                                                                                                  .almarai(
-                                                                                                  fontSize: media
-                                                                                                      .width *
-                                                                                                      fourteen,
-                                                                                                  color: (choosenVehicle !=
-                                                                                                      i)
-                                                                                                      ? (isDarkTheme ==
-                                                                                                      true)
-                                                                                                      ? const Color(
-                                                                                                      0xff8A8A8A)
-                                                                                                      : verifyDeclined
-                                                                                                      : (isDarkTheme ==
-                                                                                                      true)
-                                                                                                      ? Colors
-                                                                                                      .white
-                                                                                                      : verifyDeclined,
-                                                                                                  fontWeight: FontWeight
-                                                                                                      .w600),
-                                                                                            ),
-
-                                                                                       /*         Text(
-                                                                                                  etaDetails[i]['total']
-                                                                                                      .toString(),
+                                                                                        ),
+                                                                                        (widget
+                                                                                            .type !=
+                                                                                            2)
+                                                                                            ? Expanded(
+                                                                                            child: (etaDetails[i]['has_discount'] !=
+                                                                                                true ||
+                                                                                                etaDetails[i]['enable_bidding'] ==
+                                                                                                    true)
+                                                                                                ? (isOneWayTrip)
+                                                                                                ? Row(
+                                                                                              mainAxisAlignment: MainAxisAlignment
+                                                                                                  .end,
+                                                                                              children: [
+                                                                                                Text(
+                                                                                            etaDetails[i]['total']
+                                                                                                .toString() + '  ' + etaDetails[i]['currency'] ,
                                                                                                   style: GoogleFonts
                                                                                                       .almarai(
                                                                                                       fontSize: media
                                                                                                           .width *
-                                                                                                          fourteen, 
+                                                                                                          fourteen,
+                                                                                                      fontWeight: FontWeight
+                                                                                                          .w700,
                                                                                                       color: (choosenVehicle !=
                                                                                                           i)
                                                                                                           ? (isDarkTheme ==
                                                                                                           true)
                                                                                                           ? const Color(
                                                                                                           0xff8A8A8A)
-                                                                                                          : textColor
-                                                                                                          : (isDarkTheme ==
-                                                                                                          true)
-                                                                                                          ? Colors
-                                                                                                          .white
-                                                                                                          : textColor,
-                                                                                                      fontWeight: FontWeight
-                                                                                                          .w600,
-                                                                                                      decoration: TextDecoration
-                                                                                                          .lineThrough),
-                                                                                                ),*/
+                                                                                                          : verifyDeclined
+                                                                                                          : verifyDeclined),
+                                                                                                ),
+                                                                                              ],
+                                                                                            )
+                                                                                                : Container()
+                                                                                                : Row(
+                                                                                              mainAxisAlignment: MainAxisAlignment
+                                                                                                  .end,
+                                                                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                                                                              children: [
                                                                                                 Text(
-                                                                                                  etaDetails[i]['basic_total_price']
-                                                                                                      .toString(),
+                                                                                                  etaDetails[i]['currency'] +
+                                                                                                      ' ',
                                                                                                   style: GoogleFonts
                                                                                                       .almarai(
                                                                                                       fontSize: media
@@ -3662,21 +3345,72 @@ class _BookingConfirmationState extends State<BookingConfirmation>
                                                                                                           true)
                                                                                                           ? const Color(
                                                                                                           0xff8A8A8A)
-                                                                                                          : textColor
+                                                                                                          : verifyDeclined
                                                                                                           : (isDarkTheme ==
                                                                                                           true)
                                                                                                           ? Colors
                                                                                                           .white
-                                                                                                          : textColor,
+                                                                                                          : verifyDeclined,
                                                                                                       fontWeight: FontWeight
-                                                                                                          .w700),
-                                                                                                )
-                                                                                              ],
+                                                                                                          .w600),
+                                                                                                ),
 
-                                                                                        ))
-                                                                                        : Container()
-                                                                                  ],
-                                                                                ),
+                                                                                           /*         Text(
+                                                                                                      etaDetails[i]['total']
+                                                                                                          .toString(),
+                                                                                                      style: GoogleFonts
+                                                                                                          .almarai(
+                                                                                                          fontSize: media
+                                                                                                              .width *
+                                                                                                              fourteen,
+                                                                                                          color: (choosenVehicle !=
+                                                                                                              i)
+                                                                                                              ? (isDarkTheme ==
+                                                                                                              true)
+                                                                                                              ? const Color(
+                                                                                                              0xff8A8A8A)
+                                                                                                              : textColor
+                                                                                                              : (isDarkTheme ==
+                                                                                                              true)
+                                                                                                              ? Colors
+                                                                                                              .white
+                                                                                                              : textColor,
+                                                                                                          fontWeight: FontWeight
+                                                                                                              .w600,
+                                                                                                          decoration: TextDecoration
+                                                                                                              .lineThrough),
+                                                                                                    ),*/
+                                                                                                    Text(
+                                                                                                      etaDetails[i]['basic_total_price']
+                                                                                                          .toString(),
+                                                                                                      style: GoogleFonts
+                                                                                                          .almarai(
+                                                                                                          fontSize: media
+                                                                                                              .width *
+                                                                                                              fourteen,
+                                                                                                          color: (choosenVehicle !=
+                                                                                                              i)
+                                                                                                              ? (isDarkTheme ==
+                                                                                                              true)
+                                                                                                              ? const Color(
+                                                                                                              0xff8A8A8A)
+                                                                                                              : textColor
+                                                                                                              : (isDarkTheme ==
+                                                                                                              true)
+                                                                                                              ? Colors
+                                                                                                              .white
+                                                                                                              : textColor,
+                                                                                                          fontWeight: FontWeight
+                                                                                                              .w700),
+                                                                                                    )
+                                                                                                  ],
+
+                                                                                            ))
+                                                                                            : Container()
+                                                                                      ],
+                                                                                    ),
+                                                                                  ),
+                                                                                ],
                                                                               ),
                                                                             ),
                                                                           ),
@@ -3689,6 +3423,59 @@ class _BookingConfirmationState extends State<BookingConfirmation>
                                                           SizedBox(
                                                             height: media
                                                                 .width * 0.05,
+                                                          ),
+                                                          Padding(
+                                                            padding: const EdgeInsets.only(left: 25.0, right: 25.0, bottom: 20),
+                                                            child: Row(
+                                                              children: [
+                                                                SizedBox(
+                                                                  width: media
+                                                                      .width *
+                                                                      0.12,
+                                                                  child: Image.asset('assets/images/car-black-side-silhouette.png'),
+                                                                ),
+                                                                SizedBox(
+                                                                  width: media
+                                                                      .width *
+                                                                      0.03,
+                                                                ),
+                                                                Column(
+                                                                  crossAxisAlignment: CrossAxisAlignment
+                                                                      .start,
+                                                                  mainAxisAlignment: MainAxisAlignment
+                                                                      .spaceEvenly,
+                                                                  children: [
+                                                                    SizedBox(
+                                                                      width: media
+                                                                          .width *
+                                                                          0.3,
+                                                                      child: Text(
+                                                                          'الباقات',
+                                                                          style: GoogleFonts
+                                                                              .almarai(
+                                                                              fontSize: media
+                                                                                  .width *
+                                                                                  fourteen,
+                                                                              fontWeight: FontWeight
+                                                                                  .w600,
+                                                                              color: textColor
+                                                                          )),
+                                                                    ),
+                                                                    Text(
+                                                                      'قريبا',
+                                                                      style: GoogleFonts
+                                                                          .almarai(
+                                                                          fontSize: media
+                                                                              .width *
+                                                                              twelve,
+                                                                          color: soon
+                                                                              ),
+                                                                    ),
+                                                                    // SizedBox(width: media.width * 0.5, child: MyText(maxLines: 1, text: etaDetails[i]['short_description'], size: media.width * twelve)),
+                                                                  ],
+                                                                ),
+                                                              ],
+                                                            ),
                                                           )
                                                         ],
                                                       ))),
@@ -5544,6 +5331,7 @@ class _BookingConfirmationState extends State<BookingConfirmation>
                                                                   });
                                                                   print(
                                                                       '******* 555555');
+
                                                                   dynamic result;
                                                                   if (choosenVehicle !=
                                                                       null) {
@@ -14605,7 +14393,6 @@ class _BookingConfirmationState extends State<BookingConfirmation>
         ? '${ languages[choosenLanguage]['driver_arrive_after']} ${(duration! /
         60).toStringAsFixed(0)} ${ languages[choosenLanguage]['text_minute']}'
         : calculatingText;
-
 
     return durationText;
   }

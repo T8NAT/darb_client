@@ -246,7 +246,6 @@ class _DropLocationState extends State<DropLocation>
                         height: media.height * 1,
                         width: media.width * 1,
                         child: (_state == '3')
-                            ? (mapType == 'google')
                                 ? GoogleMap(
                                     onMapCreated: _onMapCreated,
                                     initialCameraPosition: CameraPosition(
@@ -281,80 +280,6 @@ class _DropLocationState extends State<DropLocation>
                                     buildingsEnabled: false,
                                     zoomControlsEnabled: false,
                                     myLocationEnabled: true,
-                                  )
-                                : fm.FlutterMap(
-                                    mapController: _fmController,
-                                    options: fm.MapOptions(
-                                        onMapEvent: (v) async {
-                                          if (v.source ==
-                                                  fm.MapEventSource
-                                                      .nonRotatedSizeChange &&
-                                              addressList.isEmpty) {
-                                            _centerLocation = LatLng(
-                                                v.camera.center.latitude,
-                                                v.camera.center.longitude);
-                                            setState(() {});
-
-                                            var val = await geoCoding(
-                                                _centerLocation.latitude,
-                                                _centerLocation.longitude);
-                                            if (val != '') {
-                                              setState(() {
-                                                _center = _centerLocation;
-                                                dropAddressConfirmation = val;
-                                              });
-                                            }
-                                          }
-                                          if (v.source ==
-                                              fm.MapEventSource.dragEnd) {
-                                            _centerLocation = LatLng(
-                                                v.camera.center.latitude,
-                                                v.camera.center.longitude);
-
-                                            var val = await geoCoding(
-                                                _centerLocation.latitude,
-                                                _centerLocation.longitude);
-                                            if (val != '') {
-                                              setState(() {
-                                                _center = _centerLocation;
-                                                dropAddressConfirmation = val;
-                                              });
-                                            }
-                                          }
-                                        },
-                                        onPositionChanged: (p, l) async {
-                                          if (l == false) {
-                                            _centerLocation = LatLng(
-                                                p.center!.latitude,
-                                                p.center!.longitude);
-                                            setState(() {});
-
-                                            var val = await geoCoding(
-                                                _centerLocation.latitude,
-                                                _centerLocation.longitude);
-                                            if (val != '') {}
-                                          }
-                                        },
-                                        // ignore: deprecated_member_use
-                                       /* interactiveFlags:
-                                            ~fm.InteractiveFlag.doubleTapZoom,*/
-                                        initialCenter: fmlt.LatLng(
-                                            center.latitude, center.longitude),
-                                        initialZoom: 16,
-                                        onTap: (P, L) {
-                                          setState(() {});
-                                        }),
-                                    children: [
-                                      fm.TileLayer(
-                                        // minZoom: 10,
-                                        urlTemplate:
-                                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                        userAgentPackageName: 'com.example.app',
-                                      ),
-                                      const fm.RichAttributionWidget(
-                                        attributions: [],
-                                      ),
-                                    ],
                                   )
                             : (_state == '2')
                                 ? Container(

@@ -317,7 +317,7 @@ class _NotificationPageState extends State<NotificationPage> {
                                                                               child: MyText(
                                                                                 text: notificationHistory[i]['body'].toString(),
                                                                                 size: media.width * twelve,
-                                                                                color: hintColor,
+                                                                                color: black,
                                                                               )),
                                                                           SizedBox(
                                                                             height:
@@ -548,7 +548,7 @@ class _NotificationPageState extends State<NotificationPage> {
                                                     ['body']
                                                 .toString(),
                                         size: media.width * fourteen,
-                                        color: hintColor,
+                                        color: black,
                                       ),
                                       SizedBox(
                                         height: media.width * 0.05,

@@ -51,6 +51,7 @@ Color greyText = const Color(0xff808080);
 Color borderColor = const Color(0xffAAABAA);
 Color boxColors = const Color(0xffAAAAAA).withOpacity(0.20);
 Color eventsTxTColor = const Color(0xff242E42);
+Color soon = const Color(0xff4CE5B1);
 
 dynamic shimmer;
 List<Color> shaderColor = [
